@@ -1,7 +1,7 @@
 require('dotenv').config(); 
 
 const express = require('express');
-const mongoose = require('../db/mongoose');
+const mongoose = require('mongoose'); // Update this line to use mongoose directly
 const https = require('https');
 const fs = require('fs');
 const jwt = require('jsonwebtoken'); 
@@ -10,6 +10,15 @@ const app = express();
 
 app.use(express.json());
 
+// Connect to MongoDB using the connection string from environment variables
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log("Connected to MongoDB");
+}).catch((error) => {
+    console.error("MongoDB connection error:", error);
+});
 
 const verifyRefreshToken = (req, res, next) => {
   const refreshToken = req.headers['refresh-token'];
@@ -28,18 +37,16 @@ const verifyRefreshToken = (req, res, next) => {
   });
 };
 
-
 const generateRefreshToken = (userId) => {
   const secret = process.env.REFRESH_TOKEN_SECRET;
   return jwt.sign({ userId }, secret, { expiresIn: '1d' });
 };
 
 app.get('/refresh-token', (req, res) => {
-  const userId = req.query.userId || 'defaultUser Id';
+  const userId = req.query.userId || 'defaultUser  Id';
   const newRefreshToken = generateRefreshToken(userId);
   res.json({ refreshToken: newRefreshToken });
 });
-
 
 app.get('/status', verifyRefreshToken, (req, res) => {
   res.status(200).json({ message: "Service is up and running" });
@@ -58,7 +65,6 @@ const httpsOptions = {
   key: fs.readFileSync('./certs/key.pem'),
   cert: fs.readFileSync('./certs/cert.pem')
 };
-
 
 https.createServer(httpsOptions, app).listen(port, () => {
   console.log(`Server running securely on https://localhost:${port}`);
