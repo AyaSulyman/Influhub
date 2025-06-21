@@ -1,16 +1,19 @@
 require('dotenv').config(); 
 
 const express = require('express');
-const mongoose = require('mongoose'); // Update this line to use mongoose directly
+const mongoose = require('mongoose'); 
 const https = require('https');
 const fs = require('fs');
 const jwt = require('jsonwebtoken'); 
+const bcryptjs = require('bcryptjs')
+const loginRoutes = require('../routers/user');
+
 
 const app = express();
 
 app.use(express.json());
 
-// Connect to MongoDB using the connection string from environment variables
+
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -52,11 +55,16 @@ app.get('/status', verifyRefreshToken, (req, res) => {
   res.status(200).json({ message: "Service is up and running" });
 });
 
+
+app.use('/api', loginRoutes);
+
 const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
   res.send("success");
 });
+
+
 
 const userRouter = require("../routers/user");
 app.use(userRouter);

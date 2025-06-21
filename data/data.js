@@ -9,7 +9,9 @@ const MessageSchema = new mongoose.Schema({
     description: {
         type: String,
         default: 'Hello Aya'
-    }
+    },
+    
+    
 });
 
 const Message = mongoose.model("Message", MessageSchema);
